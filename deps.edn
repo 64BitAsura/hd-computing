@@ -1,0 +1,14 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        cnuernber/dtype-next {:mvn/version "10.000-beta-49"}
+        org.clj-commons/byte-streams {:mvn/version "0.3.2"}
+        }
+ :aliases
+ {:test {:extra-paths ["test" "examples"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                       :sha "9e35c979860c75555adaff7600070c60004a0f44"}}
+         :main-opts ["-m" "cognitect.test-runner"]
+         :exec-fn cognitect.test-runner.api/test}}
+  
+}
