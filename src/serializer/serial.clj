@@ -1,5 +1,7 @@
 (ns serializer.serial
-  (:require [clojure.java.io :as io :refer [file output-stream input-stream]]))
+  (:require [clojure.java.io :as io :refer [file output-stream input-stream]]
+            [clojure.data.json :as json]
+            [clojure.data.codec.base64 :as b64]))
 
 (import [java.io ByteArrayOutputStream ObjectOutputStream ByteArrayInputStream ObjectInputStream])
 
@@ -38,7 +40,7 @@
 (defn convert-to-bytes [vector]
   (byte-array vector))
 
-(defn- file-exists? [path]
+(defn file-exists? [path]
   (.exists (io/file path)))
 
 (defn transform-values [input-object value-transformer]
@@ -53,11 +55,10 @@
 (defn increment [x]
   (println x) (+ x 1))
 
-(defn to-bytes-in-steps [[k v]]
+(defn to-bytes-in-steps [entry]
   (let [baos (ByteArrayOutputStream.)
         oos (ObjectOutputStream. baos)]
-    (.writeObject oos k)
-    (.writeObject oos v)
+    (.writeObject oos entry)
     (.flush oos); Flush after processing each entry
     (.close oos)
     (.toByteArray baos)))
@@ -79,14 +80,44 @@
       deserialized-object
       (throw (ex-info "Deserialized object is not of type clojure.lang.PersistentArrayMap" {:object deserialized-object})))))
 
+(defn bytes-to-vector [bytes]
+  (let [bais (ByteArrayInputStream. bytes)
+        ois (ObjectInputStream. bais)
+        deserialized-object (.readObject ois)]
+    (if (= (type deserialized-object) clojure.lang.PersistentVector)
+      deserialized-object
+      (throw (ex-info "Deserialized object is not of type clojure.lang.PersistentVector" {:object deserialized-object})))))
+
 (defn read-lines [filename onLine]
   (println filename)
   (with-open [rdr (io/reader filename)]
-    ;;(doseq [line  (line-seq rdr)]
-    (onLine (first (line-seq rdr)))))
+    (doseq [[c0unt line] (map-indexed (fn [index ele] [index ele]) (line-seq rdr))]
+      (onLine line))))
 
 (defn list-files [dir]
   (let [dir-file (java.io.File. dir)]
     (vec (map #(.getPath (java.io.File. dir (.getName %)))
               (filter #(-> % .isFile) (file-seq dir-file))))))
+
+(import [java.io File FileOutputStream FileInputStream ObjectOutputStream ObjectInputStream])
+
+(defn write-obj [o f]
+  (let [oos (ObjectOutputStream. (FileOutputStream. (File. f)))]
+    (.writeObject oos o)
+    (.close oos)))
+
+(defn read-obj [f]
+  (let [ois (ObjectInputStream. (FileInputStream. (File. f)))
+        o (.readObject ois)]
+    (.close ois)
+    o))
+
+(defn serializeJson [v]
+  (let [[s b] v base64  (apply str (map char (b64/encode  b)))]
+    (json/write-str [s base64])))
+
+(defn deserializeJson [json-str]
+  (let [v (json/read-str json-str)
+        [s b] v]
+    [s b]))
 

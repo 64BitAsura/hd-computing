@@ -18,7 +18,7 @@
 (defn hdv
   "Create a random hyperdimensional vector of default size"
   []
-  (dtt/->tensor (repeatedly size #(binary-rand)) :datatype :byte))
+  (dtt/->tensor (repeatedly size #(binary-rand)) :container-type :native-heap :resource-type nil :datatype :byte))
 
 (defn bundle-op
   "The bundle operation of addition"
