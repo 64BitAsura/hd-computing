@@ -29,7 +29,7 @@
            "10" 1
            "00" 0))
        (partition 2 2 bits)))
-(defn log [content] (println content) content)
+(defn log [content] content)
 
 (defn convert-seq [s]
   (-> s seq-to-bits  bits-to-bytes  bytes-to-str))

@@ -56,11 +56,10 @@
   (println x) (+ x 1))
 
 (defn to-bytes-in-steps [entry]
-  (let [baos (ByteArrayOutputStream.)
-        oos (ObjectOutputStream. baos)]
-    (.writeObject oos entry)
-    (.flush oos); Flush after processing each entry
-    (.close oos)
+  (let [baos (ByteArrayOutputStream.) -byte-array (.getBytes entry)]
+    (.write baos -byte-array 0 (count -byte-array))
+    (.flush baos); Flush after processing each entry
+    (.close baos)
     (.toByteArray baos)))
 
 (defn map-entries-lazy-seq [m]
@@ -113,8 +112,7 @@
     o))
 
 (defn serializeJson [v]
-  (let [[s b] v base64  (apply str (map char (b64/encode  b)))]
-    (json/write-str [s base64])))
+  (json/write-str v :escape-unicode false :escape-js-separators false))
 
 (defn deserializeJson [json-str]
   (let [v (json/read-str json-str)
