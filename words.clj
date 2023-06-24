@@ -26,10 +26,10 @@
   (second (re-find #"trainingData/(.+?)\.txt" s)))
 
 (defn langProfiling [lang-hdv line] (reduce                                                                                                 (fn [acc gram]
-                                                                                                                                              (dtt/->tensor
-                                                                                                                                               (if (nil? acc)
-                                                                                                                                                 (vb/get-hdv gram)
-                                                                                                                                                 (vb/bundle (vb/get-hdv gram) acc))))
+                                                                                                                                              (try                                                                                   (dtt/->tensor
+                                                                                                                                                                                                                                      (if (nil? acc)
+                                                                                                                                                                                                                                        (vb/get-hdv gram)
+                                                                                                                                                                                                                                        (vb/bundle (vb/get-hdv gram) acc))) (catch Exception _ (printf "failed on gram '%s  %s' %n" gram line))))
                                                                                                                                             lang-hdv
                                                                                                                                             (trigrams  (trim line))))
 (doseq [filePath (serializer/list-files "trainingData/")]
@@ -42,21 +42,9 @@
                                                      (reduce
                                                       #(langProfiling %1 %2)
                                                       nil
-                                                      (take 10 (serializer/lazy-file-lines filePath))))]]) "seed.vsa"))))))
+                                                      (serializer/lazy-file-lines filePath)))]]) "seed.vsa"))))))
 
-(def eng (vb/get-hdv "lang/eng"))
-(def fin (vb/get-hdv "lang/fin"))
 
-(println eng fin)
-
-(println "resetting")
-
-(vb/reset-hdv-mem!)
-
-(trigram/warmup-trigrams-from-seed (seed/seed))
-
-(println (compare eng  (vb/get-hdv "lang/eng")))
-(println (compare fin (vb/get-hdv "lang/fin")))
 
 
 
