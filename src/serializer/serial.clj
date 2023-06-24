@@ -1,6 +1,8 @@
 (ns serializer.serial
   (:require [clojure.java.io :as io :refer [file output-stream input-stream]]
+            [taoensso.tufte :as tufte :refer (defnp p profiled profile)]
             [clojure.data.json :as json]
+            [serializer.tensor-str-tensor :as tensor-serializer-fn]
             [clojure.data.codec.base64 :as b64]))
 
 (import [java.io ByteArrayOutputStream ObjectOutputStream ByteArrayInputStream ObjectInputStream])
@@ -17,8 +19,7 @@
   (with-open
    [out (output-stream
          (file filename) :append true)]
-    (.write out bytes)
-    (.write out (to-bytes (str "\n")))
+    (.write out bytes 0 (count bytes))
     (.flush out)
     (.close out))
   filename)
@@ -56,8 +57,9 @@
   (println x) (+ x 1))
 
 (defn to-bytes-in-steps [entry]
-  (let [baos (ByteArrayOutputStream.) -byte-array (.getBytes entry)]
+  (let [baos (ByteArrayOutputStream.) -byte-array (.getBytes entry) new-line (to-bytes (str "\n"))]
     (.write baos -byte-array 0 (count -byte-array))
+    (.write baos  new-line 0 (count new-line))
     (.flush baos); Flush after processing each entry
     (.close baos)
     (.toByteArray baos)))
@@ -65,11 +67,11 @@
 (defn map-entries-lazy-seq [m]
   (lazy-seq (map (fn [[k v]] [k v]) m)))
 
-(defn process-lazy-seq-one-at-a-time [lazySeq callback]
+(defn process-lazy-seq-one-at-twenty-a-time [lazySeq callback]
   (loop [current-lazySeq lazySeq]
-    (when (seq current-lazySeq)
-      (if (callback (first current-lazySeq))
-        (recur (next current-lazySeq))))))
+    (when (seq? current-lazySeq)
+      (if (callback (take 30 current-lazySeq))
+        (recur (nthnext current-lazySeq 30))))))
 
 (defn bytes-to-map [bytes]
   (let [bais (ByteArrayInputStream. bytes)
@@ -87,10 +89,18 @@
       deserialized-object
       (throw (ex-info "Deserialized object is not of type clojure.lang.PersistentVector" {:object deserialized-object})))))
 
+(defn lazy-file-lines [file]
+  (println file)
+  (letfn [(helper [rdr]
+            (lazy-seq
+             (if-let [line (.readLine rdr)]
+               (cons line (helper rdr))
+               (do (.close rdr) nil))))]
+    (helper (clojure.java.io/reader file))))
+
 (defn read-lines [filename onLine]
-  (println filename)
   (with-open [rdr (io/reader filename)]
-    (doseq [[c0unt line] (map-indexed (fn [index ele] [index ele]) (line-seq rdr))]
+    (doseq [line (line-seq rdr)]
       (onLine line))))
 
 (defn list-files [dir]
@@ -112,10 +122,27 @@
     o))
 
 (defn serializeJson [v]
-  (json/write-str v :escape-unicode false :escape-js-separators false))
+  (json/write-str v :escape-unicode false :escape-js-separators false :escape-slash false))
 
 (defn deserializeJson [json-str]
   (let [v (json/read-str json-str)
         [s b] v]
     [s b]))
 
+(defn serialize-negative-vector-as-string [entries filename]
+  (loop [current-items entries payload []]
+    (if (empty? current-items)
+      (->> (byte-array payload)
+           (serialize-bytes filename))
+      (recur (rest current-items)
+             (byte-array (mapcat seq [payload
+                                      (let [[k v]  (first current-items)]
+                                        (->> [k  (tensor-serializer-fn/convert-negative-vector-to-str v)]
+                                             (serializeJson)
+                                             (to-bytes-in-steps)))]))))))
+
+(defn decode-json [[key_ value]]
+  [key_
+   (tensor-serializer-fn/convert-str-to-negative-vector value)])
+
+(defn loadVSA [filename]  (map deserializeJson (lazy-file-lines filename)))
