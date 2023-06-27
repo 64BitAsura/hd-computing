@@ -9,15 +9,8 @@
              (vb/add-hdv!
               (str c1 c2 c3)
               (dtt/->tensor (vb/bind
-                             (dtt/->tensor
-                              (vb/bind
-                               (vb/get-hdv c1)
-                               (vb/protect-n
-                                (vb/get-hdv c2) 1))
-                              :container-type :native-heap
-                              :resource-type nil
-                              :datatype :byte)
-                             (vb/protect-n (vb/get-hdv c3) 2))
-                            :container-type :native-heap
-                            :resource-type nil
-                            :datatype :byte))))))
+                             (vb/bind
+                              (vb/protect-n (vb/get-hdv c1) 2)
+                              (vb/protect-n
+                               (vb/get-hdv c2) 1))
+                             (vb/get-hdv c3))))))))
