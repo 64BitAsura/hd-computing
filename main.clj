@@ -29,8 +29,10 @@
 (defn zero [] 0)
 (defn lang-profiling [line] (reduce
                              #(dtt/->tensor
-                               (vb/bundle-op
-                                (or (vb/get-hdv %1) %1) (vb/get-hdv %2))
+                               (try
+                                 (vb/bundle-op
+                                  (or (vb/get-hdv %1) %1) (vb/get-hdv %2))
+                                 (catch Exception e (println line) %1))
                                :container-type
                                :jvm-heap
                                :resource-type
@@ -57,24 +59,26 @@
 
 (seed/load-seed "lang.vsa")
 (def query (vb/bind (vb/bind (vb/protect-n (vb/get-hdv "t") 2) (vb/protect-n (vb/get-hdv "h") 1)) (vb/get-hdv "lang/eng")))
-(def lang-query (lang-profiling "den foerste valgmulighed at tage konventionernes indhold op til fornyet overvejelse for at fylde alle hullerne ud er en kompliceret og risikopraeget mulighed kompliceret fordi krigsfoerelsen til stadighed skifter karakter og risikopraeget fordi det ikke kan udelukkes at aabningen af konventionerne for nye forhandlinger kan foere til at der ikke opnaas nogen ny enighed"))
-(def lang-query2 (lang-profiling "eesistujariik alustab toeoed euroopa liidu jaoks kriitilisel ajal ja ma soovin talle edu samas tunnistan et mul on ka moningaid kartusi "))
-(def lang-query3 (lang-profiling "for many europeans a hens egg is a welcome part of their breakfast 
+(def lang-query-dan (lang-profiling "den foerste valgmulighed at tage konventionernes indhold op til fornyet overvejelse for at fylde alle hullerne ud er en kompliceret og risikopraeget mulighed kompliceret fordi krigsfoerelsen til stadighed skifter karakter og risikopraeget fordi det ikke kan udelukkes at aabningen af konventionerne for nye forhandlinger kan foere til at der ikke opnaas nogen ny enighed"))
+(def lang-query-est (lang-profiling "eesistujariik alustab toeoed euroopa liidu jaoks kriitilisel ajal ja ma soovin talle edu samas tunnistan et mul on ka moningaid kartusi "))
+(def lang-query-eng (lang-profiling "for many europeans a hens egg is a welcome part of their breakfast 
 "))
+(def lang-query-fra (lang-profiling "en attenuant la valeur limite journaliere ou en adoptant des mesures de lutte contre le probleme de la pollution"))
 
 (vb/reset-hdv-mem!)
 
-(seed/load-seed "seed.vsa")
+;(seed/load-seed "seed.vsa")
 
-(println (vb/query-cleanup-mem-verbose query))
+;(println (vb/query-cleanup-mem-verbose query))
 
 (vb/reset-hdv-mem!)
 
 (seed/load-seed "lang.vsa")
 
-(println (vb/query-cleanup-mem lang-query))
-(println (vb/query-cleanup-mem lang-query2))
-(println (vb/query-cleanup-mem lang-query3))
+(println (vb/query-cleanup-mem lang-query-dan))
+(println (vb/query-cleanup-mem lang-query-est))
+(println (vb/query-cleanup-mem lang-query-eng))
+(println (vb/query-cleanup-mem lang-query-fra))
 
 
 
