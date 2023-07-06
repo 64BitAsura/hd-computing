@@ -11,9 +11,9 @@
    (serializer/map-entries-lazy-seq @vb/cleanup-mem)
    "seed.vsa"))
 
-(defn load-seed [filename] (run! #(vb/add-hdv! (get % 0) (get % 1))
-                                 (map serializer/decode-json
-                                      (serializer/loadVSA filename))))
+(defn load-seed ([filename cleanup-mem] (run! #(vb/add-hdv! (get % 0) (get % 1) cleanup-mem)
+                                              (map serializer/decode-json
+                                                   (serializer/loadVSA filename)))) ([filename] (load-seed filename vb/cleanup-mem)))
 
 (defn seed []
   (if (serializer/file-exists? "seed.vsa")

@@ -1,5 +1,5 @@
 {:paths ["src" "resources"]
- :jvm-opts ["-Xss400m"]
+ :jvm-opts ["-Xss700m"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         cnuernber/dtype-next {:mvn/version "10.000-beta-49"}
         org.clj-commons/byte-streams {:mvn/version "0.3.2"}

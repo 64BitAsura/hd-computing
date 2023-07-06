@@ -19,3 +19,5 @@
 (println "compare" (compare tensor back-seq))
 
 (println (vb/similarity-score (dtt/->tensor [-1 -1 0]) (dtt/->tensor [-1 -1 1])))
+
+(println (dtt/->tensor (apply vb/bundle-op tensor tensor tensor)))

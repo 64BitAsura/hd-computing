@@ -84,9 +84,10 @@
 
 (defn add-to-cleanup-mem
   "Adds a new symbol/value pair to the cleanup memory"
-  [k v]
-  (swap! cleanup-mem merge {k v})
-  v)
+  ([k v cleanup-mem]
+   (swap! cleanup-mem merge {k v})
+   v)
+  ([k v] (add-to-cleanup-mem k v cleanup-mem)))
 
 (defn similarity-score
   "Find the similarity between two hdvs by dot product and also
@@ -101,19 +102,20 @@
 (defn query-cleanup-mem-verbose
   "Finds the nearest neighbor to the hdv by using the dot product and cosine.
    Then returns the cleaned vector - returns all results and score"
-  [query-v]
-  (->> @cleanup-mem
-       (map (fn [[k v]]
-              (merge {k v} (similarity-score query-v v))))
-       (sort-by :dot)))
+  ([cleanup-mem-atom query-v]
+   (->> @cleanup-mem-atom
+        (map (fn [[k v]]
+               (merge {k v} (similarity-score query-v v))))
+        (sort-by :dot)))
+  ([query-v] (query-cleanup-mem-verbose query-v cleanup-mem)))
 
 (defn query-cleanup-mem
   "Finds the nearest neighbor to the hdv by using the dot product.
    Then returns the cleaned vector. If given a theshold, uses cosine simalarity (0-1) and returns all the possible matches if they are greather than or equal to the threshold. Or none if there are no matches."
-  ([query-v]
-   (query-cleanup-mem nil nil query-v))
-  ([threshold verbose? query-v]
-   (let [sorted-dot (query-cleanup-mem-verbose query-v)]
+  ([cleanup-mem-atom query-v]
+   (query-cleanup-mem nil nil cleanup-mem-atom query-v))
+  ([threshold verbose? cleanup-mem-atom query-v]
+   (let [sorted-dot (query-cleanup-mem-verbose cleanup-mem-atom query-v)]
      (cond->> (reverse sorted-dot)
        threshold
        (filterv (fn [{:keys [cos-sim] :as result}]
@@ -136,7 +138,9 @@
   ([k]
    (add-to-cleanup-mem k (hdv)))
   ([k v]
-   (add-to-cleanup-mem k v)))
+   (add-to-cleanup-mem k v))
+  ([k v cleanup-mem]
+   (add-to-cleanup-mem k v cleanup-mem)))
 
 (defn unbind-get
   "Gets the key hdv from the memory and unbinds
@@ -155,7 +159,7 @@
      (if key-v
        (->> key-v
             (bind hdv)
-            (query-cleanup-mem threshold verbose?))
+            (query-cleanup-mem threshold verbose? cleanup-mem))
        (throw (ex-info "No key found in memory" {:key-value k}))))))
 
 (defn reset-hdv-mem!
