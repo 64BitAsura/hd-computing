@@ -1,7 +1,8 @@
 (ns gigasquid.vsa-base
   (:require
    [tech.v3.datatype.functional :as dtype-fn]
-   [tech.v3.tensor :as dtt]))
+   [tech.v3.tensor :as dtt]
+   [tech.v3.datatype :as dtype]))
 
 ;; Following examples in "An Introduction to Hyperdimensional Computing for Robotics"
 ;; https://link.springer.com/article/10.1007/s13218-019-00623-z
@@ -24,6 +25,8 @@
   "The bundle operation of addition"
   [v1 v2]
   (dtype-fn/+ v1 v2))
+
+(defn limit-op [v] (-> v (dtype-fn/min Byte/MAX_VALUE) (dtype-fn/max Byte/MIN_VALUE)))
 
 (defn clip
   "Clips the hyperdimensional vector magnitude to 1 or -1.
@@ -107,7 +110,7 @@
         (map (fn [[k v]]
                (merge {k v} (similarity-score query-v v))))
         (sort-by :dot)))
-  ([query-v] (query-cleanup-mem-verbose query-v cleanup-mem)))
+  ([query-v] (query-cleanup-mem-verbose cleanup-mem query-v)))
 
 (defn query-cleanup-mem
   "Finds the nearest neighbor to the hdv by using the dot product.

@@ -18,6 +18,7 @@
 (println "Back to sequence:" back-seq)
 (println "compare" (compare tensor back-seq))
 
-(println (vb/similarity-score (dtt/->tensor [-1 -1 0]) (dtt/->tensor [-1 -1 1])))
+(println (dtt/->tensor  (vb/clip (vb/bundle-op (vb/bundle-op
+                                                (dtt/->tensor [-1 -1 2] :datatype :byte)
+                                                (dtt/->tensor [-1 -1 126] :datatype :byte)) (dtt/->tensor [-1 -1 126] :datatype :byte))) :datatype :byte))
 
-(println (dtt/->tensor (apply vb/bundle-op tensor tensor tensor)))

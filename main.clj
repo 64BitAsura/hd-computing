@@ -26,72 +26,67 @@
 (defn trigrams [text] (map (fn ([pos] (subs text pos (+ pos 3)))) (range 0 (- (count text) 2))))
 
 (defn extract-file [s] (second (next (re-find #"(trainingData|testing)/(.+?)\.txt" s))))
-(defn zero [] 0)
-(defn safe-println [& more]
-  (.write *out* (str (clojure.string/join " " more) "\r"))
-  (.flush *out*))
-(defn text-profiling [line] (reduce
-                             #(dtt/->tensor
-                               (try
-                                 (vb/bundle-op
-                                  (or (vb/get-hdv %1) %1)
-                                  (vb/get-hdv %2))
-                                 (catch Exception e (println line) %1))
-                               :container-type
-                               :jvm-heap
-                               :resource-type
-                               :gc
-                               :datatype
-                               :int)
-                             (trigrams (trim line))))
-;; (defn imperative-reduce
-;;   "Do a lazy reduce, returning the original (lazy) sequence, 
-;;   and passing the final accumulator value to `store-result!` 
-;;   when the sequence is fully realized."
-;;   [f seq]
-;;   (loop [current-seq seq accum (dtt/->tensor (repeatedly 1e4 (fn [] 0)))]
-;;     (if (empty? current-seq)
-;;       accum
-;;       (recur (next current-seq) (f accum (first current-seq))))))
 
-;; (defn lang-profiling [seq] (imperative-reduce vb/bundle-op seq))
-;; (defn dummy-fn [x] (println (count x)) x)
+(defn zero [] 0)
+
+(def zero_vsa (dtt/->tensor (repeatedly 1e4 zero)))
+(def counter (atom 0))
+
+(defn dummy-counter-fn [vsa] (swap! counter inc) (println  "called " @counter " times") vsa)
+(defn dummy-fn [vsa] (println (count vsa)) vsa)
+(defn text-profiling [line]  (->> (trigrams (trim line))
+                                  (map #(or (vb/get-hdv %) zero_vsa))
+                                  (filter some?)
+                                  (apply dtype-fn/+)))
 
 (doseq [filePath (serializer/list-files "trainingData/")]
   (let [lang (str  "lang/" (extract-file filePath))]
     (when (nil? (vb/get-hdv lang))
       (tufte/profile {} (p :lang
-                           (let [n-grams (doall (->>
-                                                 (serializer/lazy-file-lines filePath)
-                                                 (remove clojure.string/blank?)
-                                                 (pmap text-profiling)
-                                                 (filter some?)))]
-                             (serializer/serialize-negative-vector-as-string
-                              (lazy-seq [[lang
-                                          (dtt/->tensor
-                                           (vb/clip
-                                            (apply dtype-fn/+ n-grams))
-                                           :container-type :native-heap
-                                           :resource-type nil
-                                           :datatype :byte)]]) "lang.vsa")))))))
-(def lang-cleanup-mem (atom {}))
-(seed/load-seed "lang.vsa" lang-cleanup-mem)
+                           (try (let [n-grams (doall (->>
+                                                      (serializer/lazy-file-lines filePath)
+                                                      (remove clojure.string/blank?)
+                                                      (pmap text-profiling)
+                                                      (filter some?)))]
+                                  (println "n-gramed for " lang)
+                                  (serializer/serialize-negative-vector-as-string
+                                   (lazy-seq [[lang
+                                               (dtt/->tensor
+                                                (vb/clip
+                                                 (apply dtype-fn/+ n-grams))
+                                                :container-type :native-heap
+                                                :resource-type nil
+                                                :datatype :byte)]]) "lang.vsa")) (catch Error e (println "exception on " lang " ex eption " e))))))))
 
+(def lang-cleanup-mem (atom {}))
+
+(seed/load-seed "lang.vsa" lang-cleanup-mem)
+(defn byte-me [vsa] (dtt/->tensor vsa :datatype :byte :resource-type :gc))
 (doseq [filePath (serializer/list-files "testing/")]
+  ;(when (= filePath "testing/ell.txt")
   (let [lang (str  "lang/" (extract-file filePath))
         results
-        (->> (serializer/lazy-file-lines filePath)
-             (remove clojure.string/blank?)
-             (map text-profiling)
-             (filter some?)
-             (map #(vb/query-cleanup-mem lang-cleanup-mem %))
-             (map first))
+        (doall (->> (serializer/lazy-file-lines filePath)
+                    (remove clojure.string/blank?)
+                    ;(pmap text-profiling)
+                    ;(filter some?)
+                    (pmap #(->> %
+                                (text-profiling)
+                                (filter some?)
+                                (vb/clip)
+                                (byte-me)
+                                (vb/query-cleanup-mem lang-cleanup-mem)
+                                (first)))
+                    ;; (pmap #(vb/query-cleanup-mem lang-cleanup-mem %))
+                    ;; (pmap first)
+                    ;; (pmap dummy-counter-fn)
+                    ))
         correctness
         (->> results (filter #(= lang %))
              (count))]
     (println (str "score for " lang " is " (float (/ correctness (count results))) " correctness " correctness " tests " (count results)))))
+;)
 
-(def query (vb/bind (vb/bind (vb/protect-n (vb/get-hdv "t") 2) (vb/protect-n (vb/get-hdv "h") 1)) (vb/get-hdv "lang/eng")))
 (def lang-query-dan (text-profiling "den foerste valgmulighed at tage konventionernes indhold op til fornyet overvejelse for at fylde alle hullerne ud er en kompliceret og risikopraeget mulighed kompliceret fordi krigsfoerelsen til stadighed skifter karakter og risikopraeget fordi det ikke kan udelukkes at aabningen af konventionerne for nye forhandlinger kan foere til at der ikke opnaas nogen ny enighed"))
 (def lang-query-est (text-profiling "eesistujariik alustab toeoed euroopa liidu jaoks kriitilisel ajal ja ma soovin talle edu samas tunnistan et mul on ka moningaid kartusi "))
 (def lang-query-eng (text-profiling "for many europeans a hens egg is a welcome part of their breakfast 
