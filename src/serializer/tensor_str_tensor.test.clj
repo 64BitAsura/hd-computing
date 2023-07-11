@@ -6,6 +6,7 @@
                                        [seed.seed :as seed]
                                        [seed.trigram :as trigram]
                                        [gigasquid.vsa-base :as vb]))
+(use '[clojure.string :only (trim split)])
 
 (def tensor (dtt/->tensor (repeatedly 16 #(if (> (rand) 0.5) -1
                                               (if (> (rand) 0.5) 1 0))) :container-type :native-heap :resource-type nil :datatype :byte))
@@ -21,4 +22,6 @@
 (println (dtt/->tensor  (vb/clip (vb/bundle-op (vb/bundle-op
                                                 (dtt/->tensor [-1 -1 2] :datatype :byte)
                                                 (dtt/->tensor [-1 -1 126] :datatype :byte)) (dtt/->tensor [-1 -1 126] :datatype :byte))) :datatype :byte))
+
+(dorun (->>  (split "bantu - christian, orthodox - shia - neohinduism" #"-") (map println)))
 
