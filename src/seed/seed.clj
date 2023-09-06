@@ -5,9 +5,11 @@
 
 (def numeric (map str (into [] (concat  (range (int 0) (inc (int 9)))))))
 
+(def pos (map int (into [] (concat  (range (int 0) (inc (int 100)))))))
+
 (def special-character '("," "/" "-" "_" "?" "(" ")" "[" "]" "." "'" "`" "/" "'" "\"" "&" "!" "@" "#" "$" "%" "^" "*" "{" "}" ":" ";" "<" ">" "|" "+" "=" "~"))
 
-(println latin-alphabet special-character numeric)
+(println latin-alphabet special-character numeric pos)
 
 (defn create-seed []
   (println "creating seed data")

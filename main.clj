@@ -83,29 +83,35 @@
 
 ;; (println (vb/query-cleanup-mem-verbose lang-cleanup-mem (vb/clip (text-profiling "doctor of audiology"))))
 
+(def pos (atom {}))
+(def numeric (map int (into [] (concat  (range (int 0) (inc (int 100)))))))
+(run! #(vb/add-to-cleanup-mem % pos) numeric)
+
 (doseq [filePath (serializer/list-files "testing/dicts")]
-  ;(when (= filePath "testing/ell.txt")
-  (let [lang (str (extract-file filePath))
-        results
-        (doall (->> (serializer/lazy-file-lines filePath)
-                    (remove clojure.string/blank?)
+  (when (= filePath "testing/dicts/email-ids")
+    (let [lang (str (extract-file filePath))
+          results
+          (doall (->> (serializer/lazy-file-lines filePath)
+                      (remove clojure.string/blank?)
                     ;(pmap text-profiling)
                     ;(filter some?)
-                    (pmap #(->> %
-                                (text-profiling)
-                                (filter some?)))
-                    (apply dtype-fn/+)
-                    (vb/clip)
-                    (byte-me)
-                    (vb/query-cleanup-mem-verbose lang-cleanup-mem)
-                    (map #(str "\n" %))
-                    (reverse)
+                      (pmap #(->> %
+                                  (text-profiling)
+                                  (filter some?)))
+                      (map-indexed #(dtype-fn/* (get @pos %1) %2))
+                      (apply dtype-fn/+)
+                      (vb/clip)
+                      (byte-me)
+                      (dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
+                      (vb/query-cleanup-mem-verbose pos)
+                      (map #(str "\n" %))
+                      (reverse)
 
                     ;; (pmap #(vb/query-cleanup-mem lang-cleanup-mem %))
                     ;; (pmap first)
                     ;; (pmap dummy-counter-fn)
-                    ))]
-    (println (str "\r \r \r tags for the column " lang ".txt are "  (apply str (take 3 results))) "\n \n")))
+                      ))]
+      (println (str "\r \r \r tags for the column " lang ".txt are "  (apply str (take 30 results))) "\n \n"))))
 ;)
 
 ;; (def lang-query-dan (text-profiling "den foerste valgmulighed at tage konventionernes indhold op til fornyet overvejelse for at fylde alle hullerne ud er en kompliceret og risikopraeget mulighed kompliceret fordi krigsfoerelsen til stadighed skifter karakter og risikopraeget fordi det ikke kan udelukkes at aabningen af konventionerne for nye forhandlinger kan foere til at der ikke opnaas nogen ny enighed"))
