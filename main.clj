@@ -104,7 +104,7 @@
                       (apply dtype-fn/+)
                       (vb/clip)
                       (byte-me)
-                      ;(dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
+                      (dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
                       (byte-me)
                       (vb/query-cleanup-mem-verbose pos)
                       (map #(str "\n" %))
