@@ -88,6 +88,7 @@
 (def pos (atom {}))
 (def numeric (map int (into [] (concat  (range (int 0) (inc (int 110)))))))
 (run! #(vb/add-to-cleanup-mem % pos) numeric)
+(println (count pos))
 
 (doseq [filePath (serializer/list-files "testing/dicts")]
   (when (= filePath "testing/dicts/email-ids")
@@ -100,7 +101,7 @@
                       (pmap #(->> %
                                   (text-profiling)
                                   (filter some?)))
-                      ;(map-indexed #(dtype-fn/* (get @pos %1) %2))
+                      (map-indexed #(dtype-fn/* (get @pos %1) %2))
                       (apply dtype-fn/+)
                       (vb/clip)
                       (byte-me)
