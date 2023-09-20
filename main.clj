@@ -36,13 +36,15 @@
 
 (defn dummy-counter-fn [vsa] (swap! counter inc) (println  "called " @counter " times") vsa)
 (defn dummy-fn [line vsa] (println "\r log " line vsa (map str (into [] (concat (chars (char-array vsa))))) (count (map str (into [] (concat (chars (char-array vsa))))))) nil)
-(defn text-profiling [line]  (->> (trigrams (trim (clojure.string/lower-case line)))
+(defn text-profiling [line]  (->> (trigrams
+                                   (trim (clojure.string/lower-case line)))
                                   (filter some?)
-                                  (map #(or (vb/get-hdv %)
-                                            (apply
-                                             trigram/trigram-dot-product
-                                             (map str (into [] (concat (chars (char-array %))))))
-                                            zero_vsa))
+                                  (map
+                                   #(or (vb/get-hdv %)
+                                        (apply
+                                         trigram/trigram-dot-product
+                                         (map str (into [] (concat (chars (char-array %))))))
+                                        zero_vsa))
                                   (filter some?)
                                   (apply dtype-fn/+)))
 
@@ -103,6 +105,7 @@
                       (vb/clip)
                       (byte-me)
                       (dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
+                      (byte-me)
                       (vb/query-cleanup-mem-verbose pos)
                       (map #(str "\n" %))
                       (reverse)

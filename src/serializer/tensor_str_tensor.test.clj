@@ -29,7 +29,7 @@
 
 (def latin-alphabet (map str (into [] (concat (into [] (concat (map char (range (int \a) (inc (int \z)))) " "))))))
 
-(def numeric (map str (into [] (concat  (range (int 0) (inc (int 200)))))))
+(def numeric (map str (into [] (concat  (range (int 0) (inc (int 20)))))))
 
 (def box (atom {}))
 (def pos (atom {}))
@@ -38,22 +38,150 @@
 (run! add-box latin-alphabet)
 (run! add-pos numeric)
 
-(def bundle (apply dtype-fn/+ [(dtype-fn/* (get @box "a") (get @pos "1"))
-                               (dtype-fn/* (get @box "b") (get @pos "2"))
-                               (dtype-fn/* (get @box "c") (get @pos "3"))
-                               (dtype-fn/* (get @box "d") (get @pos "4"))
-                               (dtype-fn/* (get @box "f") (get @pos "5"))
-                               (dtype-fn/* (get @box "e") (get @pos "6"))
-                               (dtype-fn/* (get @box "g") (get @pos "7"))
-                               (dtype-fn/* (get @box "h") (get @pos "8"))
-                               (dtype-fn/* (get @box "a") (get @pos "7"))
-                               (dtype-fn/* (get @box "i") (get @pos "9"))]))
+(def query (apply dtype-fn/+ [(dtype-fn/*
+                               (get @box "h")
+                               (vb/protect-n (get @box "e") 1)
+                               (vb/protect-n (get @box "l") 2)
+                               (get @pos "1"))
+                              (dtype-fn/*
+                               (get @box "e")
+                               (vb/protect-n (get @box "l") 1)
+                               (vb/protect-n (get @box "l") 2)
+                               (get @pos "2"))
+                              (dtype-fn/*
+                               (get @box "l")
+                               (vb/protect-n (get @box "l") 1)
+                               (vb/protect-n (get @box "o") 2)
+                               (get @pos "3"))
+                              (dtype-fn/*
+                               (get @box "l")
+                               (vb/protect-n (get @box "o") 1)
+                               (vb/protect-n (get @box " ") 2)
+                               (get @pos "4"))
+                              (dtype-fn/*
+                               (get @box "o")
+                               (vb/protect-n (get @box " ") 1)
+                               (vb/protect-n (get @box "w") 2)
+                               (get @pos "5"))
+                              (dtype-fn/*
+                               (get @box " ")
+                               (vb/protect-n (get @box "w") 1)
+                               (vb/protect-n (get @box "o") 2)
+                               (get @pos "6"))
+                              (dtype-fn/*
+                               (get @box "w")
+                               (vb/protect-n (get @box "o") 1)
+                               (vb/protect-n (get @box "r") 2)
+                               (get @pos "7"))
+                              (dtype-fn/*
+                               (get @box "o")
+                               (vb/protect-n (get @box "r") 1)
+                               (vb/protect-n (get @box "l") 2)
+                               (get @pos "8"))
+                              (dtype-fn/*
+                               (get @box "r")
+                               (vb/protect-n (get @box "l") 1)
+                               (vb/protect-n (get @box "d") 2)
+                               (get @pos "9"))
+                              (dtype-fn/*
+                               (get @box "l")
+                               (vb/protect-n (get @box "d") 1)
+                               (vb/protect-n (get @box " ") 2)
+                               (get @pos "10"))
+                              (dtype-fn/*
+                               (get @box "d")
+                               (vb/protect-n (get @box " ") 1)
+                               (vb/protect-n (get @box "s") 2)
+                               (get @pos "11"))
+                              (dtype-fn/*
+                               (get @box " ")
+                               (vb/protect-n (get @box "s") 1)
+                               (vb/protect-n (get @box "a") 2)
+                               (get @pos "12"))
+                              (dtype-fn/*
+                               (get @box "s")
+                               (vb/protect-n (get @box "a") 1)
+                               (vb/protect-n (get @box "m") 2)
+                               (get @pos "13"))]))
 
-(def query (apply dtype-fn/+ [(get @box "a") (get @box "h") (get @box "c") (get @box "i")]))
+(def profile (apply dtype-fn/+ [(dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "h") 1)
+                                 (vb/protect-n (get @box "e") 2))
+                                (dtype-fn/*
+                                 (get @box "h")
+                                 (vb/protect-n (get @box "e") 1)
+                                 (vb/protect-n (get @box "l") 2))
+                                (dtype-fn/*
+                                 (get @box "e")
+                                 (vb/protect-n (get @box "l") 1)
+                                 (vb/protect-n (get @box "l") 2))
+                                (dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "b") 1)
+                                 (vb/protect-n (get @box "a") 2))
+                                (dtype-fn/*
+                                 (get @box "b")
+                                 (vb/protect-n (get @box "a") 1)
+                                 (vb/protect-n (get @box "d") 2))
+                                (dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "u") 1)
+                                 (vb/protect-n (get @box "g") 2))
+                                (dtype-fn/*
+                                 (get @box "u")
+                                 (vb/protect-n (get @box "g") 1)
+                                 (vb/protect-n (get @box "l") 2))
+                                (dtype-fn/*
+                                 (get @box "g")
+                                 (vb/protect-n (get @box "l") 1)
+                                 (vb/protect-n (get @box "y") 2))
+                                (dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "d") 1)
+                                 (vb/protect-n (get @box "o") 2))
+                                (dtype-fn/*
+                                 (get @box "d")
+                                 (vb/protect-n (get @box "o") 1)
+                                 (vb/protect-n (get @box "o") 2))
+                                (dtype-fn/*
+                                 (get @box "o")
+                                 (vb/protect-n (get @box "o") 1)
+                                 (vb/protect-n (get @box "m") 2))
+                                (dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "c") 1)
+                                 (vb/protect-n (get @box "h") 2))
+                                (dtype-fn/*
+                                 (get @box "c")
+                                 (vb/protect-n (get @box "h") 1)
+                                 (vb/protect-n (get @box "a") 2))
+                                (dtype-fn/*
+                                 (get @box "h")
+                                 (vb/protect-n (get @box "a") 1)
+                                 (vb/protect-n (get @box "o") 2))
+                                (dtype-fn/*
+                                 (get @box "a")
+                                 (vb/protect-n (get @box "o") 1)
+                                 (vb/protect-n (get @box "s") 2))
+                                (dtype-fn/*
+                                 (get @box " ")
+                                 (vb/protect-n (get @box "s") 1)
+                                 (vb/protect-n (get @box "a") 2))
+                                (dtype-fn/*
+                                 (get @box "s")
+                                 (vb/protect-n (get @box "a") 1)
+                                 (vb/protect-n (get @box "m") 2))
 
-(def resultant (dtype-fn/* bundle query))
+                              ;; (dtype-fn/*
+                              ;;  (get @box "r")
+                              ;;  (vb/protect-n (get @box "l") 1)
+                              ;;  (vb/protect-n (get @box "d") 2))
+                                ]))
 
-(println (vb/query-cleanup-mem 0.1 true box resultant))
+(def resultant (dtype-fn/* profile query))
+
+(println (vb/query-cleanup-mem 0.003 true pos resultant))
 
 
 
