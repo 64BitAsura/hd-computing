@@ -88,7 +88,7 @@
 (def pos (atom {}))
 (def numeric (map int (into [] (concat  (range (int 0) (inc (int 110)))))))
 (run! #(vb/add-to-cleanup-mem % pos) numeric)
-(println (count pos))
+(println (count @pos))
 
 (doseq [filePath (serializer/list-files "testing/dicts")]
   (when (= filePath "testing/dicts/email-ids")
