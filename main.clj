@@ -100,7 +100,7 @@
                       (pmap #(->> %
                                   (text-profiling)
                                   (filter some?)))
-                      (map-indexed #(dtype-fn/* (get @pos %1) %2))
+                      ;(map-indexed #(dtype-fn/* (get @pos %1) %2))
                       (apply dtype-fn/+)
                       (vb/clip)
                       (byte-me)
