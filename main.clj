@@ -86,7 +86,7 @@
 ;; (println (vb/query-cleanup-mem-verbose lang-cleanup-mem (vb/clip (text-profiling "doctor of audiology"))))
 
 (def pos (atom {}))
-(def numeric (map int (into [] (concat  (range (int 0) (inc (int 100)))))))
+(def numeric (map int (into [] (concat  (range (int 0) (inc (int 110)))))))
 (run! #(vb/add-to-cleanup-mem % pos) numeric)
 
 (doseq [filePath (serializer/list-files "testing/dicts")]
@@ -104,7 +104,7 @@
                       (apply dtype-fn/+)
                       (vb/clip)
                       (byte-me)
-                      (dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
+                      ;(dtype-fn/* (get @lang-cleanup-mem "dicts/email-ids"))
                       (byte-me)
                       (vb/query-cleanup-mem-verbose pos)
                       (map #(str "\n" %))
