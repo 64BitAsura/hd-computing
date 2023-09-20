@@ -115,7 +115,7 @@
                     ;; (pmap first)
                     ;; (pmap dummy-counter-fn)
                       ))]
-      (println (str "\r \r \r tags for the column " lang ".txt are "  (apply str (take 30 results))) "\n \n"))))
+      (println (str "\r \r \r tags for the column " lang ".txt are "  (apply str (take 100 results))) "\n \n"))))
 ;)
 
 ;; (def lang-query-dan (text-profiling "den foerste valgmulighed at tage konventionernes indhold op til fornyet overvejelse for at fylde alle hullerne ud er en kompliceret og risikopraeget mulighed kompliceret fordi krigsfoerelsen til stadighed skifter karakter og risikopraeget fordi det ikke kan udelukkes at aabningen af konventionerne for nye forhandlinger kan foere til at der ikke opnaas nogen ny enighed"))
